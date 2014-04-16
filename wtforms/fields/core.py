@@ -14,7 +14,7 @@ from wtforms.utils import unset_value
 __all__ = (
     'BooleanField', 'DecimalField', 'DateField', 'DateTimeField', 'FieldList',
     'FloatField', 'FormField', 'IntegerField', 'RadioField', 'SelectField',
-    'SelectMultipleField', 'StringField',
+    'SelectMultipleField', 'StringField', 'TimeField'
 )
 
 
@@ -736,11 +736,37 @@ class DateTimeField(Field):
                 raise ValueError(self.gettext('Not a valid datetime value'))
 
 
+class TimeField(Field):
+    """
+    A text field which stores a `datetime.time` matching a format.
+    """
+    widget = widgets.TextInput()
+
+    def __init__(self, label=None, validators=None, format='%H:%M:%S', **kwargs):
+        super(TimeField, self).__init__(label, validators, **kwargs)
+        self.format = format
+
+    def _value(self):
+        if self.raw_data:
+            return ' '.join(self.raw_data)
+        else:
+            return self.data and self.data.strftime(self.format) or ''
+
+    def process_formdata(self, valuelist):
+        if valuelist:
+            date_str = ' '.join(valuelist)
+            try:
+                self.data = datetime.time(*[int(x) for x in date_str.split(':')])
+            except ValueError:
+                self.data = None
+                raise ValueError(self.gettext('Not a valid time value'))
+
+
 class DateField(DateTimeField):
     """
     Same as DateTimeField, except stores a `datetime.date`.
     """
-    def __init__(self, label=None, validators=None, format='%Y-%m-%d', **kwargs):
+    def __init__(self, label=None, validators=None, format='%d-%m-%Y', **kwargs):
         super(DateField, self).__init__(label, validators, format, **kwargs)
 
     def process_formdata(self, valuelist):

@@ -166,6 +166,10 @@ class ModelConverter(ModelConverterBase):
     def conv_DateTime(self, field_args, **extra):
         return f.DateTimeField(**field_args)
 
+    @converts('Time')
+    def conv_Time(self, field_args, **extra):
+        return f.TimeField(**field_args)
+
     @converts('Enum')
     def conv_Enum(self, column, field_args, **extra):
         field_args['choices'] = [(e, e) for e in column.type.enums]
